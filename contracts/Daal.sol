@@ -1,18 +1,48 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts@4.6.0/token/ERC1155/ERC1155.sol";
-import "@openzeppelin/contracts@4.6.0/access/Ownable.sol";
-import "@openzeppelin/contracts@4.6.0/security/Pausable.sol";
-import "@openzeppelin/contracts@4.6.0/token/ERC1155/extensions/ERC1155Burnable.sol";
-import "@openzeppelin/contracts@4.6.0/token/ERC1155/extensions/ERC1155Supply.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
+import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/draft-ERC721Votes.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
+
+import "hardhat/console.sol";
 
 /// @custom:security-contact security@daalbeat.com
-contract DAAL is ERC1155, Ownable, Pausable, ERC1155Burnable, ERC1155Supply {
-    constructor() ERC1155("") {}
+contract DAAL is
+    ERC721,
+    ERC721Enumerable,
+    ERC721URIStorage,
+    Pausable,
+    Ownable,
+    ERC721Burnable,
+    EIP712,
+    ERC721Votes
+{
+    using Counters for Counters.Counter;
 
-    function setURI(string memory newuri) public onlyOwner {
-        _setURI(newuri);
+    Counters.Counter private _tokenIdCounter;
+
+    constructor() ERC721("DAAL", "DAAL") EIP712("DAAL", "1") {}
+
+    uint256 membershipPrice = 0.03 ether;
+
+    function getMembershipPrice() public view returns (uint256) {
+        return membershipPrice;
+    }
+
+    function updateMembershipPrice(uint256 _membershipPrice) public payable {
+        require(owner() == _msgSender(), "Only owner can update.");
+        membershipPrice = _membershipPrice;
+    }
+
+    function _baseURI() internal pure override returns (string memory) {
+        return "https://daalbeat.com";
     }
 
     function pause() public onlyOwner {
@@ -23,32 +53,59 @@ contract DAAL is ERC1155, Ownable, Pausable, ERC1155Burnable, ERC1155Supply {
         _unpause();
     }
 
-    function mint(
-        address account,
-        uint256 id,
-        uint256 amount,
-        bytes memory data
-    ) public onlyOwner {
-        _mint(account, id, amount, data);
-    }
-
-    function mintBatch(
+    function safeMint(
         address to,
-        uint256[] memory ids,
-        uint256[] memory amounts,
-        bytes memory data
+        string memory uri,
+        uint256 price
     ) public onlyOwner {
-        _mintBatch(to, ids, amounts, data);
+        uint256 tokenId = _tokenIdCounter.current();
+        require(price > 0, "Price must be at least 1 wei");
+        require(price == membershipPrice, "Price must be equal.");
+        _tokenIdCounter.increment();
+        _safeMint(to, tokenId);
+        _setTokenURI(tokenId, uri);
     }
 
     function _beforeTokenTransfer(
-        address operator,
         address from,
         address to,
-        uint256[] memory ids,
-        uint256[] memory amounts,
-        bytes memory data
-    ) internal override(ERC1155, ERC1155Supply) whenNotPaused {
-        super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
+        uint256 tokenId
+    ) internal override(ERC721, ERC721Enumerable) whenNotPaused {
+        super._beforeTokenTransfer(from, to, tokenId);
+    }
+
+    // The following functions are overrides required by Solidity.
+
+    function _afterTokenTransfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal override(ERC721, ERC721Votes) {
+        super._afterTokenTransfer(from, to, tokenId);
+    }
+
+    function _burn(uint256 tokenId)
+        internal
+        override(ERC721, ERC721URIStorage)
+    {
+        super._burn(tokenId);
+    }
+
+    function tokenURI(uint256 tokenId)
+        public
+        view
+        override(ERC721, ERC721URIStorage)
+        returns (string memory)
+    {
+        return super.tokenURI(tokenId);
+    }
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        override(ERC721, ERC721Enumerable)
+        returns (bool)
+    {
+        return super.supportsInterface(interfaceId);
     }
 }
