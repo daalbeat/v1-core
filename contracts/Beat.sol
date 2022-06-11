@@ -8,12 +8,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
 /// @custom:security-contact security@daalbeat.com
-contract PriceTransparency is
-    ERC721,
-    ERC721URIStorage,
-    ERC721Burnable,
-    Ownable
-{
+contract Beat is ERC721, ERC721URIStorage, ERC721Burnable, Ownable {
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIdCounter;
