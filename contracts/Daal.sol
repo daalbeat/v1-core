@@ -14,7 +14,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "hardhat/console.sol";
 
 /// @custom:security-contact security@daalbeat.com
-contract DAAL is
+contract Daal is
     ERC721,
     ERC721Enumerable,
     ERC721URIStorage,
@@ -28,9 +28,9 @@ contract DAAL is
 
     Counters.Counter private _tokenIdCounter;
 
-    constructor() ERC721("DAAL", "DAAL") EIP712("DAAL", "1") {}
+    uint256 public membershipPrice = 0.001 ether;
 
-    uint256 membershipPrice = 0.03 ether;
+    constructor() ERC721("DAAL", "DAAL") EIP712("DAAL", "1") {}
 
     function getMembershipPrice() public view returns (uint256) {
         return membershipPrice;
@@ -53,14 +53,8 @@ contract DAAL is
         _unpause();
     }
 
-    function safeMint(
-        address to,
-        string memory uri,
-        uint256 price
-    ) public onlyOwner {
+    function safeMint(address to, string memory uri) public onlyOwner {
         uint256 tokenId = _tokenIdCounter.current();
-        require(price > 0, "Price must be at least 1 wei");
-        require(price == membershipPrice, "Price must be equal.");
         _tokenIdCounter.increment();
         _safeMint(to, tokenId);
         _setTokenURI(tokenId, uri);
@@ -73,8 +67,6 @@ contract DAAL is
     ) internal override(ERC721, ERC721Enumerable) whenNotPaused {
         super._beforeTokenTransfer(from, to, tokenId);
     }
-
-    // The following functions are overrides required by Solidity.
 
     function _afterTokenTransfer(
         address from,
