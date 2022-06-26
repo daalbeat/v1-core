@@ -21,13 +21,13 @@ describe("Daal contract", function () {
   describe("Membership Pricing", function () {
     it("Should return default NFT membership pricing 0.01 ethers", async function () {
       const defaultPricing = await daalToken.getMembershipPrice();
-      expect(defaultPricing).to.equal(1000000000000000);
+      expect(defaultPricing).to.equal("10000000000000000");
     });
 
     it("Should update default NFT membersship pricing to 0.02 ethers", async function () {
-      await daalToken.updateMembershipPrice(2000000000000000);
+      await daalToken.updateMembershipPrice("20000000000000000");
       const newPrice = await daalToken.getMembershipPrice();
-      expect(newPrice).to.equal(2000000000000000);
+      expect(newPrice).to.equal("20000000000000000");
     });
   });
 });

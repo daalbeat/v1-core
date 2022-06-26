@@ -28,7 +28,7 @@ contract Daal is
 
     Counters.Counter private _tokenIdCounter;
 
-    uint256 public membershipPrice = 0.001 ether;
+    uint256 public membershipPrice = 0.01 ether;
 
     constructor() ERC721("DAAL", "DAAL") EIP712("DAAL", "1") {}
 
