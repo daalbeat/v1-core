@@ -7,8 +7,6 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
-import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/draft-ERC721Votes.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
 import "hardhat/console.sol";
@@ -20,9 +18,7 @@ contract Daal is
     ERC721URIStorage,
     Pausable,
     Ownable,
-    ERC721Burnable,
-    EIP712,
-    ERC721Votes
+    ERC721Burnable
 {
     using Counters for Counters.Counter;
 
@@ -30,14 +26,16 @@ contract Daal is
 
     uint256 public membershipPrice = 0.01 ether;
 
-    constructor() ERC721("DAAL", "DAAL") EIP712("DAAL", "1") {}
+    address payable public daalbeat =
+        payable(0x61Dcdd563D9AbF6A379ca6EA7a86678AFb90b0CF);
+
+    constructor() ERC721("DAAL", "DAAL") {}
 
     function getMembershipPrice() public view returns (uint256) {
         return membershipPrice;
     }
 
-    function updateMembershipPrice(uint256 _membershipPrice) public payable {
-        require(owner() == _msgSender(), "Only owner can update.");
+    function updateMembershipPrice(uint256 _membershipPrice) public onlyOwner {
         membershipPrice = _membershipPrice;
     }
 
@@ -53,11 +51,20 @@ contract Daal is
         _unpause();
     }
 
-    function safeMint(address to, string memory uri) public onlyOwner {
+    function mintMembership(address to, string memory uri) public payable {
+        require(msg.value == membershipPrice, "Not enough funds to mint.");
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         _safeMint(to, tokenId);
         _setTokenURI(tokenId, uri);
+    }
+
+    function getBalance() public view returns (uint256) {
+        return address(this).balance;
+    }
+
+    function withdraw() public onlyOwner {
+        payable(owner()).transfer(address(this).balance);
     }
 
     function _beforeTokenTransfer(
@@ -66,14 +73,6 @@ contract Daal is
         uint256 tokenId
     ) internal override(ERC721, ERC721Enumerable) whenNotPaused {
         super._beforeTokenTransfer(from, to, tokenId);
-    }
-
-    function _afterTokenTransfer(
-        address from,
-        address to,
-        uint256 tokenId
-    ) internal override(ERC721, ERC721Votes) {
-        super._afterTokenTransfer(from, to, tokenId);
     }
 
     function _burn(uint256 tokenId)
