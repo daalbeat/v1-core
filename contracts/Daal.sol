@@ -52,7 +52,10 @@ contract Daal is
     }
 
     function mintMembership(address to, string memory uri) public payable {
-        require(msg.value == membershipPrice, "Not enough funds to mint.");
+        require(
+            msg.value == membershipPrice,
+            "Do not match the membership fee"
+        );
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         _safeMint(to, tokenId);
