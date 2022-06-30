@@ -63,8 +63,12 @@ contract Daal is
         return address(this).balance;
     }
 
-    function withdraw() public onlyOwner {
-        payable(owner()).transfer(address(this).balance);
+    function withdraw(uint256 _transferAmount) public onlyOwner {
+        require(
+            address(this).balance >= _transferAmount,
+            "The transfer amount too large"
+        );
+        payable(owner()).transfer(_transferAmount);
     }
 
     function _beforeTokenTransfer(
