@@ -30,6 +30,10 @@ const config: HardhatUserConfig = {
       url: `https://eth-goerli.alchemyapi.io/v2/${process.env.ALCHEMY_GOERLI_KEY}`,
       accounts: [`${process.env.WALLET_PRIVATE_KEY}`],
     },
+    rinkeby: {
+      url: `https://eth-rinkeby.alchemyapi.io/v2/${process.env.ALCHEMY_RINKEBY_KEY}`,
+      accounts: [`${process.env.WALLET_PRIVATE_KEY}`],
+    },
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
